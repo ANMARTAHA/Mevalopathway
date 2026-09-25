@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study smart</title>
+<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3f5fa;--card:#ffffff;--ink:#1b2236;--mut:#5d667c;--line:#dde2ee;--navy:#1f3864;--acc:#3b5bdb;
+--pre-bg:#eaf0fb;--pre:#4472c4;--int:#4a5872;--gold-bg:#fff1cc;--gold:#c99400;--fin-bg:#fce8e8;--fin:#d62828;
+--arrow:#e8833a;--leave:#d9480f;--enter:#2b8a3e;--chg:#c77d00;--form:#2b8a3e;--brk:#d9480f;
+--shadow:0 1px 2px rgba(20,30,60,.06),0 8px 24px rgba(20,30,60,.06)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:24px;line-height:1.15;margin:2px 0 4px;color:var(--navy);letter-spacing:-.01em}
+.sub{margin:0 0 12px;color:var(--mut);font-size:13.5px;max-width:60ch}
+.rule{height:3px;background:var(--pre);border-radius:2px;margin:0 0 12px}
+.steps{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.step{flex:0 0 auto;scroll-snap-align:center;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.step .n{display:inline-block;min-width:20px;height:20px;line-height:20px;text-align:center;border-radius:10px;background:var(--int);color:#fff;font-size:11px;font-weight:700;margin-right:6px}
+.step.done .n{background:var(--enter)}
+.step.on{border-color:var(--arrow);box-shadow:0 0 0 2px var(--arrow) inset;font-weight:600}
+.step.on .n{background:var(--arrow)}
+.grid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:920px){.grid{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:start}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px}
+.names{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;font-size:14px;margin:0 2px 8px}
+.names .a,.names .b{font-weight:650}
+.names .ar{color:var(--arrow);font-weight:700}
+.badge{display:inline-block;margin:0 0 8px 2px;padding:3px 10px;border-radius:8px;font-size:12.5px;font-weight:650}
+.badge.gold{background:var(--gold-bg);color:var(--gold);border:1.5px solid var(--gold)}
+.badge.final{background:var(--fin-bg);color:var(--fin);border:1.5px solid var(--fin)}
+#stage{display:block;width:100%;height:auto;background:var(--card);border-radius:10px;touch-action:manipulation}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;height:40px;min-width:44px;padding:0 12px;font:inherit;font-size:16px;cursor:pointer}
+.btn.main{background:var(--arrow);border-color:var(--arrow);color:#fff;min-width:56px;font-weight:700}
+.btn:focus-visible,.step:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:default}
+#scrub{flex:1 1 140px;min-width:120px;accent-color:var(--arrow);height:28px}
+.opts{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-top:8px;font-size:13px;color:var(--mut)}
+.opts label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.opts select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:3px 6px}
+.side{display:grid;gap:14px}
+.info h2{font-size:18px;margin:0 0 2px;color:var(--navy)}
+.info .tag{color:var(--mut);font-size:13px;margin:0 0 8px}
+.figlabel{display:inline-block;font-style:italic;color:var(--leave);background:color-mix(in srgb,var(--arrow) 12%,transparent);border-left:3px solid var(--arrow);padding:3px 9px;border-radius:0 8px 8px 0;font-size:13.5px;margin:0 0 10px}
+.eq{font-size:14px;line-height:1.9;margin:0 0 10px}
+.chip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12.5px;font-weight:650;border:1.5px solid}
+.chip.out{color:var(--leave);border-color:var(--leave);background:color-mix(in srgb,var(--leave) 12%,transparent)}
+.chip.in{color:var(--enter);border-color:var(--enter);background:color-mix(in srgb,var(--enter) 12%,transparent)}
+.eq .cmp{font-weight:600}.eq .ar,.eq .plus{color:var(--mut);margin:0 2px}
+.phases{list-style:none;margin:0 0 8px;padding:0}
+.phases li{padding:7px 10px;border-left:3px solid var(--line);margin:0 0 4px;color:var(--mut);cursor:pointer;border-radius:0 8px 8px 0;font-size:14px;transition:background .2s,color .2s}
+.phases li.on{border-left-color:var(--arrow);color:var(--ink);background:color-mix(in srgb,var(--arrow) 10%,transparent)}
+.note{font-size:12.5px;color:var(--mut);margin:6px 0 0;padding:8px 10px;border:1px dashed var(--line);border-radius:8px}
+.note:empty{display:none}
+.statin{font-size:12.5px;color:var(--fin);margin:8px 0 0;padding:9px 10px;border:1px solid var(--fin);background:var(--fin-bg);border-radius:8px;display:none}
+.statin.show{display:block}
+.statin label{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:650}
+.mapcard h3{margin:0 0 6px;font-size:15px;color:var(--navy)}
+#map{display:block;width:100%;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12px;color:var(--mut)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;border:2px solid;vertical-align:-1px;margin-right:5px}
+.key{margin-top:10px;font-size:12.5px;color:var(--mut)}
+.key b{font-weight:650}
+.k-form{color:var(--form)}.k-brk{color:var(--brk)}.k-chg{color:var(--chg)}
+.credits{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:13px;color:var(--mut);margin:0 0 10px}
+.credits a{color:var(--acc);text-decoration:none;font-weight:600}
+.credits a:hover{text-decoration:underline}
+.credits.bottom{margin:16px 2px 0;padding-top:12px;border-top:1px solid var(--line)}
+.foot{margin:16px 2px 0;font-size:12px;color:var(--mut);max-width:80ch}
+.edge{fill:none;stroke:var(--line);stroke-width:2}
+.edge.on{stroke:var(--arrow);stroke-width:3;stroke-dasharray:6 4;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-20}}
+.node{cursor:pointer}
+@media (prefers-reduced-motion:reduce){.edge.on{animation:none}.phases li{transition:none}}
+
+/* ---- added: full explanation guide + abbreviations glossary ---- */
+.guide,.gloss{margin-top:14px}
+.guide h2,.gloss h2{font-size:18px;color:var(--navy);margin:0 0 4px}
+.guide>p.gsub,.gloss>p.gsub{color:var(--mut);font-size:13px;margin:0 0 12px}
+.guide details{border:1px solid var(--line);border-radius:10px;margin:0 0 8px;overflow:hidden;background:var(--card)}
+.guide summary{cursor:pointer;padding:10px 12px;font-weight:650;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px;font-size:14px}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary::before{content:'◂';display:inline-block;color:var(--arrow);transition:transform .2s;flex:0 0 auto}
+.guide details[open] summary::before{transform:rotate(-90deg)}
+.guide .gbody{padding:2px 14px 14px;color:var(--ink);font-size:13.5px;line-height:1.75;border-top:1px solid var(--line)}
+.guide .gbody h4{margin:10px 0 4px;font-size:13.5px;color:var(--navy)}
+.guide .gbody p{margin:6px 0}
+.guide .clin{border:1px dashed var(--fin);background:var(--fin-bg);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:13px;color:var(--fin)}
+.guide .sumtitle{margin:14px 2px 6px;font-size:14px;color:var(--navy);font-weight:650}
+table.gtab{width:100%;border-collapse:collapse;font-size:12.8px;margin:0 0 4px}
+table.gtab th,table.gtab td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+table.gtab th{background:var(--pre-bg);color:var(--navy)}
+table.gtab tr:nth-child(even) td{background:color-mix(in srgb,var(--bg) 55%,transparent)}
+.gloss table.gtab td:nth-child(2),.gloss table.gtab td:nth-child(3){text-align:right}
+</style>
+<!-- style-note: --iso1/--iso2/--pp added inline in :root via script-independent CSS below -->
+<style>
+:root{--iso1:#b5560d;--iso1-bg:#fbe4cd;--iso2:#2f6690;--iso2-bg:#dcebf5;--pp:#6b7a3f;--pp-bg:#eaf0dc}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Study smart</h1>
+  <p class="sub"><b>Acetate–mevalonate pathway</b> — interactive explorer. Watch each reaction happen atom by atom. Tap a step, press play, or drag the slider to scrub through a reaction.</p>
+  <div class="credits" id="creditsTop">© Study smart <span>·</span> <a href="https://t.me/AnmarTaha" target="_blank" rel="noopener">Telegram @AnmarTaha</a> <span>·</span> <a href="https://instagram.com/a.za18" target="_blank" rel="noopener">Instagram a.za18</a></div>
+  <div class="rule"></div>
+  <nav class="steps" id="steps" aria-label="Reactions"></nav>
+
+  <div class="grid">
+    <section class="card" aria-label="Reaction animation">
+      <div class="names"><span class="a" id="nA"></span><span class="ar">→</span><span class="b" id="nB"></span></div>
+      <div id="badge" class="badge" hidden></div>
+      <svg id="stage" viewBox="0 0 560 420" role="img" aria-label="Animated molecular structures for the selected reaction"></svg>
+      <div class="ctrl">
+        <button class="btn" id="prev" aria-label="Previous reaction">⏮</button>
+        <button class="btn main" id="play" aria-label="Play or pause">▶</button>
+        <button class="btn" id="replay" aria-label="Replay reaction">↻</button>
+        <button class="btn" id="next" aria-label="Next reaction">⏭</button>
+        <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Reaction progress">
+      </div>
+      <div class="opts">
+        <label>Speed <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+        <label><input type="checkbox" id="auto" checked> Continue to next reaction</label>
+        <label><input type="checkbox" id="hl" checked> Highlight changes</label>
+      </div>
+      <div class="key"><b class="k-form">Green</b> forms · <b class="k-brk">red</b> breaks or leaves · <b class="k-chg">amber</b> changes · <span class="chip out">leaves</span> <span class="chip in">enters</span></div>
+      <div class="statin" id="statinBox">
+        <label><input type="checkbox" id="statinToggle"> Simulate a statin (blocks HMG-CoA reductase)</label>
+      </div>
+    </section>
+
+    <div class="side">
+      <section class="card info" aria-live="polite">
+        <h2 id="iTitle"></h2>
+        <p class="tag" id="iTag"></p>
+        <div class="figlabel" id="iFig"></div>
+        <p class="eq" id="iEq"></p>
+        <ol class="phases" id="iPhases"></ol>
+        <p class="note" id="iNote"></p>
+      </section>
+      <section class="card mapcard">
+        <h3>Pathway map</h3>
+        <svg id="map" viewBox="0 0 414 336" role="img" aria-label="Map of the acetate-mevalonate pathway"></svg>
+        <div class="legend">
+          <span><i style="border-color:var(--pre);background:var(--pre-bg)"></i>Precursor</span>
+          <span><i style="border-color:var(--int)"></i>Intermediate</span>
+          <span><i style="border-color:var(--gold);background:var(--gold-bg)"></i>Mevalonic acid</span>
+          <span><i style="border-color:var(--fin);background:var(--fin-bg)"></i>Terpenoid class (final)</span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card guide" dir="rtl" lang="ar" aria-label="الشرح الكامل من الدليل الدراسي">
+    <h2>📖 الشرح الكامل (من الدليل الدراسي المرفق)</h2>
+    <p class="gsub">نص كل خطوة من المسار، منقول ومُرتّب من ملف الـ PDF المرفق — اضغط على أي عنوان لفتحه.</p>
+
+    <details open>
+      <summary>نظرة عامة على المسار</summary>
+      <div class="gbody">
+        <p>مسار الأسيتات–ميفالونات (Acetate-Mevalonate Pathway) هو مسار استقلابي أساسي في الكائنات الحية، مسؤول عن تصنيع التربينات (Terpenoids) والستيرويدات (Steroids) والزيوت الطيّارة (Volatile Oils)، بدءًا من نواتج الاستقلاب الأوّلي.</p>
+        <h4>أصل السلائف من الاستقلاب الأوّلي</h4>
+        <p>يُنتج التركيب الضوئي (Photosynthesis) الكربوهيدرات (الغلوكوز)، التي تدخل في تحلّل السكر (Glycolysis) لتعطي حمض البيروفيك (Pyruvic acid). يخضع حمض البيروفيك لنزع كربوكسيل أكسدي (Oxidative decarboxylation) لإنتاج أسيتيل-CoA (يلزم 3 جزيئات منه).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>1 — تكوّن الأسيتو-أسيتيل CoA</summary>
+      <div class="gbody"><p>يتكاثف جزيء واحد من أسيتيل-CoA مع جزيء آخر من أسيتيل-CoA (تكاثف) لإعطاء الأسيتو-أسيتيل CoA (Aceto-acetyl CoA).</p></div>
+    </details>
+
+    <details>
+      <summary>2 — تصنيع HMG-CoA</summary>
+      <div class="gbody">
+        <p>يتكاثف الأسيتو-أسيتيل CoA مع جزيء ثالث من أسيتيل-CoA وجزيء ماء (H₂O) بوساطة إنزيم HMG-CoA synthase، ليتكوّن (3S)-3-هيدروكسي-3-ميثيل غلوتاريل CoA (المعروف اختصارًا HMG-CoA).</p>
+        <div class="clin"><b>🔗 رابط سريري — الستاتينات (Statins):</b><br>تثبّط الستاتينات إنزيم HMG-CoA reductase، فتمنع تكوّن الميفالونات، وبالتالي تثبّط تصنيع الكوليسترول في الجسم.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>3 — الاختزال إلى حمض الميفالونيك</summary>
+      <div class="gbody"><p>يخضع HMG-CoA للاختزال بوساطة إنزيم HMG-CoA reductase لإنتاج حمض الميفالونيك (Mevalonic acid / Mevalonate) — وهو الوسيط الذي سُمّي المسار باسمه.</p></div>
+    </details>
+
+    <details>
+      <summary>4 — تكوّن وحدة الأيزوبرين الفعّالة (IPP)</summary>
+      <div class="gbody"><p>يخضع حمض الميفالونيك للفسفرة (Phosphorylation) ونزع الكربوكسيل (Decarboxylation) لإعطاء إيزوبنتنيل ثنائي الفوسفات (IPP) وهو C5، أي وحدة البناء الأساسية المكوّنة من 5 ذرات كربون.</p></div>
+    </details>
+
+    <details>
+      <summary>5 — الأَيزمَرة إلى DMAPP</summary>
+      <div class="gbody"><p>يخضع IPP للأَيزمَرة (IPP ⇌ DMAPP) ليتكوّن ثنائي ميثيل أليل ثنائي الفوسفات (DMAPP) وهو C5.</p></div>
+    </details>
+
+    <details>
+      <summary>6 — تكوّن جيرانيل ثنائي الفوسفات (GPP)</summary>
+      <div class="gbody">
+        <p>يتكاثف DMAPP (C5) مع IPP (C5) (مع فقدان مجموعة ثنائي الفوسفات PP) لإنتاج جيرانيل ثنائي الفوسفات (GPP) وهو C10 (وحدتا أيزوبرين).</p>
+        <p><b>الناتج النهائي:</b> تحلقن/تعديل GPP يُعطي أحاديّات التربين (Monoterpenes، C10).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>7 — تكوّن فارنيزيل ثنائي الفوسفات (FPP)</summary>
+      <div class="gbody">
+        <p>يتحد GPP (C10) مع جزيء IPP آخر (C5) (مع فقدان PP) ليتكوّن فارنيزيل ثنائي الفوسفات (FPP) وهو C15 (3 وحدات أيزوبرين).</p>
+        <p><b>الناتج النهائي:</b> التحلقن/التعديل يُعطي سيسكويتربينات (Sesquiterpenes، C15).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>8 — تكوّن جيرانيل جيرانيل ثنائي الفوسفات (GGPP)</summary>
+      <div class="gbody">
+        <p>يتحد FPP (C15) مع جزيء IPP إضافي (C5) (مع فقدان PP) لإعطاء جيرانيل جيرانيل ثنائي الفوسفات (GGPP) وهو C20 (4 وحدات أيزوبرين).</p>
+        <p><b>الناتج النهائي:</b> التحلقن/التعديل يُعطي ثنائيّات التربين (Diterpenes، C20).</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>9 — سكوالين والتربينات/الستيرويدات الأعلى</summary>
+      <div class="gbody">
+        <p>يتحد جزيئان من FPP (2×C15) بتكاثف من طرف إلى طرف (tail-to-tail) ليكوّنا سكوالين (Squalene) وهو C30 (6 وحدات أيزوبرين).</p>
+        <p><b>الناتج النهائي:</b> أكسدة وتحلقن السكوالين يؤديان إلى ثلاثيّات التربين والستيرويدات (Triterpenes &amp; Steroids)، مثل الكوليسترول C30.</p>
+      </div>
+    </details>
+
+    <p class="sumtitle">جدول ملخّص عدد وحدات الأيزوبرين</p>
+    <table class="gtab">
+      <tr><th>الوسيط / الناتج</th><th>عدد الكربونات</th><th>وحدات الأيزوبرين</th><th>صنف المركّب الناتج</th></tr>
+      <tr><td>IPP / DMAPP</td><td>C5</td><td>1</td><td>وحدات البناء الأساسية</td></tr>
+      <tr><td>GPP</td><td>C10</td><td>2</td><td>أحاديّات التربين (Monoterpenes)</td></tr>
+      <tr><td>FPP</td><td>C15</td><td>3</td><td>سيسكويتربينات (Sesquiterpenes)</td></tr>
+      <tr><td>GGPP</td><td>C20</td><td>4</td><td>ثنائيّات التربين (Diterpenes)</td></tr>
+      <tr><td>Squalene</td><td>C30</td><td>6</td><td>ثلاثيّات التربين والستيرويدات</td></tr>
+    </table>
+  </section>
+
+  <section class="card gloss" dir="rtl" lang="ar" aria-label="الاختصارات والأسماء الكاملة">
+    <h2>🔤 الاختصارات والأسماء الكاملة</h2>
+    <p class="gsub">كل اختصار كيميائي يظهر في الرسم والحركة، مع اسمه الكامل بالإنجليزية ومعناه بالعربية.</p>
+    <table class="gtab">
+      <tr><th>الاختصار</th><th>الاسم الكامل (إنجليزي)</th><th>المعنى (عربي)</th></tr>
+      <tr><td>CoA</td><td>Coenzyme A</td><td>الإنزيم المرافق A</td></tr>
+      <tr><td>HMG‑CoA</td><td>3‑Hydroxy‑3‑Methylglutaryl Coenzyme A</td><td>3‑هيدروكسي‑3‑ميثيل غلوتاريل الإنزيم المرافق A</td></tr>
+      <tr><td>IPP</td><td>Isopentenyl Pyrophosphate</td><td>إيزوبنتنيل ثنائي الفوسفات</td></tr>
+      <tr><td>DMAPP</td><td>Dimethylallyl Pyrophosphate</td><td>ثنائي ميثيل أليل ثنائي الفوسفات</td></tr>
+      <tr><td>GPP</td><td>Geranyl Pyrophosphate</td><td>جيرانيل ثنائي الفوسفات</td></tr>
+      <tr><td>FPP</td><td>Farnesyl Pyrophosphate</td><td>فارنيزيل ثنائي الفوسفات</td></tr>
+      <tr><td>GGPP</td><td>Geranylgeranyl Pyrophosphate</td><td>جيرانيل جيرانيل ثنائي الفوسفات</td></tr>
+      <tr><td>PP</td><td>Pyrophosphate (diphosphate) group</td><td>مجموعة ثنائي الفوسفات</td></tr>
+      <tr><td>NADPH</td><td>Nicotinamide Adenine Dinucleotide Phosphate (reduced form)</td><td>نيكوتيناميد أدنين ثنائي النوكليوتيد فوسفات (الصيغة المختزلة) — مصدر الهيدروجين في تفاعل الاختزال</td></tr>
+    </table>
+  </section>
+
+  <p class="foot">Structures are schematic, not exact bond geometry — the goal is to fix the sequence of the pathway in memory. Large groups (coenzyme A, pyrophosphate) are shown as labelled boxes rather than full structures. Notes marked "not shown in a typical textbook figure" add context beyond the core diagram.</p>
+  <div class="credits bottom" id="creditsBottom">© Study smart <span>·</span> <a href="https://t.me/AnmarTaha" target="_blank" rel="noopener">Telegram @AnmarTaha</a> <span>·</span> <a href="https://instagram.com/a.za18" target="_blank" rel="noopener">Instagram a.za18</a></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- math helpers ---------- */
+var clamp=function(x,a,b){a=a===undefined?0:a;b=b===undefined?1:b;return Math.min(b,Math.max(a,x));};
+var ease=function(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;};
+var smooth=function(x){return x*x*(3-2*x);};
+var loc=function(t,w){return w?clamp((t-w[0])/((w[1]-w[0])||1e-6)):clamp(t);};
+var lerp=function(a,b,u){return a+(b-a)*u;};
+var F=20, HL=true;
+
+/* ---------- scene DSL ---------- */
+function A(id,p0,p1,o){return Object.assign({id:id,p0:p0,p1:p1||p0},o||{});}
+function B(a,b,s0,s1,o){return Object.assign({a:a,b:b,s0:s0,s1:s1===undefined?s0:s1},o||{});}
+var RC=[250,250],RAD=60;
+var V=[-90,-30,30,90,150,210].map(function(a){return [RC[0]+RAD*Math.cos(a*Math.PI/180),RC[1]+RAD*Math.sin(a*Math.PI/180)];});
+var R=function(dx,dy){return [RC[0]+dx,RC[1]+dy];};
+var RN=['rT','rUR','rLR','rB','rLL','rUL'];
+function ringA(cx,cy){var c=[cx||RC[0],cy||RC[1]];return V.map(function(p,i){var dx=p[0]-RC[0],dy=p[1]-RC[1];return A(RN[i],[c[0]+dx,c[1]+dy]);}).concat([A('rc',c,null,{virt:true})]);}
+function ringB(st,bw){return st.map(function(s,i){var a=Array.isArray(s)?s:[s,s];return B(RN[i],RN[(i+1)%6],a[0],a[1],{c:'rc',bw:bw});});}
+var SC=[];
+function scene(o){o.enters=o.enters||[];o.leaves=o.leaves||[];o.note=o.note||'';o.dur=o.dur||7000;SC.push(o);}
+
+/* ================= SCENES ================= */
+
+/* S0 — precursors overview */
+(function(){
+  var bx=function(id,x,y,w,h,lab,vw){var o={box:[w,h],lab:lab};if(vw){o.vis=[0,1];o.vw=vw;}return A(id,[x,y],null,o);};
+  scene({chip:'Start',tag:'Where the pathway begins',title:'From sunlight to acetyl-CoA',fig:'Precursors',dur:9500,
+    nameA:'Photosynthesis → glucose → glycolysis',nameB:'Pyruvic acid → Acetyl-CoA (×3 needed)',
+    edges:['photo>carb','carb>glyc','glyc>pyr','pyr>acoa'],active:['acoa'],
+    phases:[[0,'Photosynthesis fixes CO2 and water into carbohydrates (glucose).'],
+      [.22,'Glycolysis breaks glucose down step by step.'],
+      [.46,'The end product of glycolysis is pyruvic acid.'],
+      [.7,'Oxidative decarboxylation removes CO2 from pyruvate and attaches coenzyme A.'],
+      [.92,'Acetyl-CoA is ready — three molecules will be needed for the next stage.']],
+    atoms:[
+      bx('photo',80,40,130,40,'Photosynthesis'),
+      bx('carb',80,112,130,40,'Glucose  C6H12O6',[.08,.22]),
+      bx('glyc',270,112,120,40,'Glycolysis',[.28,.42]),
+      bx('pyr',460,112,110,44,'Pyruvic acid  C3H4O3',[.46,.6]),
+      bx('acoa',460,206,110,48,'Acetyl-CoA (×3)',[.68,.88])
+    ],
+    bonds:[],
+    arrows:[{a:[80,64],b:[80,88],tw:[.06,.16]},{a:[148,112],b:[206,112],tw:[.24,.34]},
+      {a:[334,112],b:[400,112],tw:[.42,.52]},{a:[460,138],b:[460,178],tw:[.62,.74]}],
+    texts:[{x:80,y:392,text:'CO2 + H2O + sunlight',size:12.5,vis:[0,1],vw:[0,.16],fill:'var(--mut)'}]
+  });
+})();
+
+/* S1 — 2x acetyl-CoA -> acetoacetyl-CoA */
+(function(){
+  var X=250;
+  scene({chip:'2× Acetyl-CoA',tag:'Reaction 1 · forms acetoacetyl-CoA',title:'Two acetyl groups condense',fig:'Condensation with another acetyl-CoA',
+    nameA:'Acetyl-CoA (×2)',nameB:'Acetoacetyl-CoA',leaves:['CoA-SH'],edges:['acoa>acacoa'],active:['acacoa'],
+    note:'Schematic: the methyl carbon of one acetyl-CoA attacks the carbonyl carbon of a second, displacing its CoA-SH.',
+    phases:[[0,'One acetyl-CoA is in place: CoA-S-C(=O)-CH3.'],
+      [.1,'A second acetyl-CoA approaches from the right.'],
+      [.5,'A new C-C bond forms between the two acetyl units.'],
+      [.72,'The second CoA-SH is released as a leaving group.'],
+      [.95,'Acetoacetyl-CoA: CoA-S-CO-CH2-CO-CH3.']],
+    atoms:[
+      A('coa',[X,32],null,{box:[92,34],lab:'CoA-S'}),
+      A('c1',[X,84]),A('o1',[X+46,84],null,{lab:'O',la:'s'}),
+      A('c2',[X,130]),
+      A('c3',[X+160,176],[X,176],{tw:[.08,.5]}),
+      A('o3',[X+206,176],[X+46,176],{lab:'O',la:'s',tw:[.08,.5]}),
+      A('c4',[X+160,222],[X,222],{lab:'CH3',tw:[.08,.5]}),
+      A('coa2',[X+160,176],[X+250,120],{lab:'CoA-SH',role:'leave',chip:1,cmode:'in',cw:[.58,.85],tw:[.5,.95]})
+    ],
+    bonds:[B('coa','c1','1'),B('c1','o1','2'),B('c1','c2','1'),
+      B('c2','c3','','1',{bw:[.3,.6]}),B('c3','o3','2','2'),B('c3','c4','1'),
+      B('c3','coa2','1','',{bw:[.05,.5],col:'leave'})]
+  });
+})();
+
+/* S2 — acetoacetyl-CoA + acetyl-CoA + H2O -> HMG-CoA */
+(function(){
+  var X=250;
+  scene({chip:'+ Acetyl-CoA + H2O',tag:'Reaction 2 · forms HMG-CoA',title:'A third acetyl unit adds on',fig:'+ Acetyl-CoA + H2O — HMG-CoA synthase',dur:8000,
+    nameA:'Acetoacetyl-CoA',nameB:'HMG-CoA',enters:['Acetyl-CoA','H2O'],leaves:['CoA-SH'],edges:['acacoa>hmgcoa'],active:['hmgcoa'],
+    note:'Aldol-type addition: the enolate of a third acetyl-CoA attacks the C3 ketone; hydrolysis of that acetyl-CoA then releases free CoA-SH.',
+    phases:[[0,'Acetoacetyl-CoA: CoA-S-CO-CH2-CO-CH3.'],
+      [.15,'A third acetyl-CoA (with water) approaches the middle ketone.'],
+      [.45,'A new C-C bond forms; the ketone oxygen becomes a hydroxyl (-OH).'],
+      [.68,'Hydrolysis releases CoA-SH from the added unit, leaving a free -COOH.'],
+      [.95,'HMG-CoA: 3-hydroxy-3-methylglutaryl-CoA.']],
+    atoms:[
+      A('coa',[X,26],null,{box:[92,32],lab:'CoA-S'}),
+      A('c1',[X,76]),A('o1',[X+46,76],null,{lab:'O',la:'s'}),
+      A('c2',[X,120]),
+      A('c3',[X,164]),A('o3',[X+46,164],null,{lab:['O','OH'],la:'s',lw:[.4,.7]}),
+      A('me',[X+70,138],null,{lab:'CH3'}),
+      A('c4',[X+150,208],[X,208],{tw:[.15,.5]}),
+      A('c5',[X+150,252],[X,252],{lab:'COOH',tw:[.15,.5]}),
+      A('wat',[X-150,230],[X+40,208],{lab:'H2O',role:'enter',chip:1,cmode:'out',cw:[.15,.4],vis:[1,0],vw:[.4,.6],tw:[.05,.45]}),
+      A('coa2',[X+150,252],[X+255,190],{lab:'CoA-SH',role:'leave',chip:1,cmode:'in',cw:[.55,.8],tw:[.5,.9]})
+    ],
+    bonds:[B('coa','c1','1'),B('c1','o1','2'),B('c1','c2','1'),B('c2','c3','1'),
+      B('c3','o3','2','1',{bw:[.35,.65]}),B('c3','me','1'),
+      B('c3','c4','','1',{bw:[.1,.45]}),B('c4','c5','','1',{bw:[.2,.55]}),
+      B('c5','coa2','1','',{bw:[.05,.5],col:'leave'})]
+  });
+})();
+
+/* S3 — HMG-CoA -> Mevalonic acid (statin-gated) */
+(function(){
+  var X=250;
+  scene({chip:'Reduction',tag:'Reaction 3 · forms mevalonic acid',title:'HMG-CoA reductase reduces the thioester',fig:'Reduction — HMG-CoA reductase',
+    nameA:'HMG-CoA',nameB:'Mevalonic acid',leaves:['CoA-SH'],enters:['2×[H] (NADPH, schematic)'],
+    badge:'gold',badgeText:"Mevalonic acid — the pathway's namesake",edges:['hmgcoa>mev'],active:['mev'],statinGate:true,
+    note:'Statins (e.g. atorvastatin, simvastatin) competitively inhibit HMG-CoA reductase, lowering mevalonate output and downstream cholesterol synthesis. Try the switch above the animation.',
+    phases:[[0,'HMG-CoA still carries its CoA thioester at C1.'],
+      [.15,'Two hydride equivalents (from NADPH) approach the carbonyl.'],
+      [.55,'The C1=O becomes C1-OH as CoA-SH leaves.'],
+      [.9,'Mevalonic acid: HOOC-CH2-C(OH)(CH3)-CH2-CH2OH.']],
+    atoms:[
+      A('coa',[X,32],[X-160,-40],{box:[92,32],lab:'CoA-S',role:'leave',chip:1,cmode:'in',cw:[.5,.78],tw:[.45,.88]}),
+      A('c1',[X,84]),A('o1',[X+46,84],null,{lab:['O','OH'],la:'s',lw:[.42,.72]}),
+      A('c2',[X,130]),
+      A('c3',[X,176]),A('o3',[X+46,176],null,{lab:'OH',la:'s'}),A('me',[X+70,150],null,{lab:'CH3'}),
+      A('c4',[X,222]),A('c5',[X,268],null,{lab:'COOH'}),
+      A('hin',[X-190,60],[X-90,84],{lab:'2×[H]',role:'enter',chip:1,cmode:'out',cw:[.1,.3],vis:[1,0],vw:[.32,.52],tw:[.05,.4]})
+    ],
+    bonds:[B('coa','c1','1','',{bw:[.42,.82],col:'leave'}),B('c1','o1','2','1',{bw:[.38,.72]}),B('c1','c2','1'),
+      B('c2','c3','1'),B('c3','o3','1'),B('c3','me','1'),B('c3','c4','1'),B('c4','c5','1')]
+  });
+})();
+
+/* S4 — Mevalonic acid -> IPP */
+(function(){
+  var X=250;
+  scene({chip:'Phosphorylation + decarboxylation',tag:'Reaction 4 · forms IPP',title:'Losing CO2, gaining pyrophosphate',fig:'Phosphorylation + decarboxylation',dur:8000,
+    nameA:'Mevalonic acid',nameB:'Isopentenyl pyrophosphate (IPP)',enters:['ATP → pyrophosphate (schematic)'],leaves:['CO2','H2O (schematic elimination)'],
+    edges:['mev>ipp'],active:['ipp'],
+    note:'Two ATP-dependent phosphorylations followed by decarboxylation-elimination convert mevalonate to IPP; steps are condensed here.',
+    phases:[[0,'Mevalonic acid: HOOC-CH2-C(OH)(CH3)-CH2-CH2OH.'],
+      [.12,'The terminal -OH is phosphorylated (schematic single PP shown).'],
+      [.35,'The C3 hydroxyl leaves together with the ring carboxyl carbon.'],
+      [.6,'A new C=C double bond forms as CO2 is released.'],
+      [.92,'Isopentenyl pyrophosphate (IPP), C5 — the first true isoprene unit.']],
+    atoms:[
+      A('c1',[X,84]),A('o1',[X+46,84],null,{lab:['OH','O-PP'],la:'s',lw:[.15,.42]}),
+      A('c2',[X,130]),
+      A('c3',[X,176]),A('o3',[X+46,176],[X+120,120],{lab:'OH',la:'s',role:'leave',chip:1,cmode:'in',cw:[.3,.5],tw:[.28,.6]}),
+      A('me',[X+70,150],null,{lab:'CH3'}),
+      A('c4',[X,222]),
+      A('c5',[X,268],[X+40,320],{lab:'COOH',role:'leave',chip:1,cmode:'in',cw:[.55,.78],tw:[.5,.85]})
+    ],
+    bonds:[B('c1','o1','1'),B('c1','c2','1'),B('c2','c3','1'),
+      B('c3','o3','1','',{bw:[.22,.5],col:'leave'}),B('c3','me','1'),
+      B('c3','c4','1','2',{bw:[.45,.75]}),B('c4','c5','1','',{bw:[.45,.8],col:'leave'})]
+  });
+})();
+
+/* S5 — IPP <-> DMAPP */
+(function(){
+  var X=250;
+  scene({chip:'Isomerization',tag:'Reaction 5 · IPP ⇌ DMAPP',title:'The double bond migrates',fig:'Isomerization — IPP isomerase',dur:6000,
+    nameA:'Isopentenyl pyrophosphate (IPP)',nameB:'Dimethylallyl pyrophosphate (DMAPP)',edges:['ipp>dmapp'],active:['dmapp'],
+    note:'Schematic: IPP isomerase shifts the double bond one position over, giving DMAPP the same C5H9O7P2 formula. Both are used together to build every longer isoprenoid chain.',
+    phases:[[0,'IPP: the double bond sits away from the CH2-OPP end.'],
+      [.4,'A proton is added then removed one carbon over.'],
+      [.75,'The double bond has migrated next to the methyl branch.'],
+      [.95,'Dimethylallyl pyrophosphate (DMAPP) — equally C5, ready to prime chain growth.']],
+    atoms:[
+      A('c1',[X,84]),A('o1',[X+46,84],null,{lab:'O-PP',la:'s'}),
+      A('c2',[X,130]),A('c3',[X,176]),A('me',[X+70,150],null,{lab:'CH3'}),A('c4',[X,222],null,{lab:'CH2'})
+    ],
+    bonds:[B('c1','o1','1'),B('c1','c2','1'),B('c2','c3','1','2',{bw:[.35,.7]}),B('c3','me','1'),B('c3','c4','2','1',{bw:[.3,.65]})]
+  });
+})();
+
+/* ---------- isoprene-unit chain helper (phase B) ---------- */
+function unitChain(prevN,newColor,label,extraLeave){
+  var PPX=80,SPACE=68,STARTX=150,Y=210;
+  var atoms=[A('pp',[PPX,Y],null,{box:[46,34],lab:'PP',boxColor:['var(--pp-bg)','var(--pp)']})];
+  for(var i=0;i<prevN;i++){
+    var col=i%2===0?['var(--iso1-bg)','var(--iso1)']:['var(--iso2-bg)','var(--iso2)'];
+    atoms.push(A('u'+i,[STARTX+i*SPACE,Y],null,{box:[52,38],lab:'C5',boxColor:col}));
+  }
+  var nx=STARTX+prevN*SPACE;
+  atoms.push(A('u'+prevN,[nx+180,Y],[nx,Y],{box:[52,38],lab:'C5',boxColor:newColor,tw:[.1,.5]}));
+  atoms.push(A('ppL',[nx+180,Y-40],[nx+280,Y-100],{lab:'PPi',role:'leave',chip:1,cmode:'in',cw:[.35,.6],tw:[.3,.7]}));
+  var bonds=[B('pp','u0','1')];
+  for(var j=0;j<prevN-1;j++)bonds.push(B('u'+j,'u'+(j+1),'1'));
+  if(prevN>0)bonds.push(B('u'+(prevN-1),'u'+prevN,'','1',{bw:[.35,.6]}));
+  else bonds=[B('pp','u0','','1',{bw:[.35,.6]})];
+  bonds.push(B('u'+prevN,'ppL','1','',{bw:[.05,.35],col:'leave'}));
+  return {atoms:atoms,bonds:bonds};
+}
+
+/* S6 — DMAPP + IPP -> GPP */
+(function(){
+  var g=unitChain(1,['var(--iso2-bg)','var(--iso2)'],'IPP');
+  scene({chip:'DMAPP + IPP',tag:'Reaction 6 · forms GPP',title:'The first chain-extension',fig:'+ IPP (PP lost)',
+    nameA:'DMAPP + IPP',nameB:'Geranyl pyrophosphate (GPP) · C10',leaves:['Pyrophosphate (PPi)'],edges:['dmapp>gpp'],active:['gpp'],
+    note:'DMAPP supplies the allylic head; IPP is the nucleophile. Its own pyrophosphate is lost as the new C-C bond forms.',
+    phases:[[0,'DMAPP (one isoprene unit) waits with its head group intact.'],
+      [.15,'IPP approaches from the right.'],
+      [.5,'A new C-C bond joins the two C5 units.'],
+      [.72,'The incoming pyrophosphate is released.'],
+      [.95,'Geranyl pyrophosphate — C10, two isoprene units.']],
+    atoms:g.atoms,bonds:g.bonds
+  });
+})();
+
+/* S7 — GPP + IPP -> FPP */
+(function(){
+  var g=unitChain(2,['var(--iso1-bg)','var(--iso1)'],'IPP');
+  scene({chip:'GPP + IPP',tag:'Reaction 7 · forms FPP',title:'Chain extends again',fig:'+ IPP (PP lost)',
+    nameA:'GPP + IPP',nameB:'Farnesyl pyrophosphate (FPP) · C15',leaves:['Pyrophosphate (PPi)'],edges:['gpp>fpp'],active:['fpp'],
+    note:'FPP is the branch point of the pathway: it can be extended once more to GGPP, or two FPP molecules can join to make squalene.',
+    phases:[[0,'GPP (two isoprene units) waits, head group intact.'],
+      [.15,'A third IPP approaches.'],
+      [.5,'A new C-C bond joins it to the chain.'],
+      [.72,'The incoming pyrophosphate is released.'],
+      [.95,'Farnesyl pyrophosphate — C15, three isoprene units.']],
+    atoms:g.atoms,bonds:g.bonds
+  });
+})();
+
+/* S8 — FPP + IPP -> GGPP */
+(function(){
+  var g=unitChain(3,['var(--iso2-bg)','var(--iso2)'],'IPP');
+  scene({chip:'FPP + IPP → GGPP',tag:'Reaction 8 · forms GGPP',title:'One more isoprene unit',fig:'+ IPP (PP lost)',
+    nameA:'FPP + IPP',nameB:'Geranylgeranyl pyrophosphate (GGPP) · C20',leaves:['Pyrophosphate (PPi)'],edges:['fpp>ggpp'],active:['ggpp'],
+    note:'GGPP is the precursor of the diterpenes (C20) — this branch does not feed into squalene.',
+    phases:[[0,'FPP (three isoprene units) waits.'],[.15,'A fourth IPP approaches.'],
+      [.5,'A new C-C bond forms.'],[.72,'Pyrophosphate is released.'],
+      [.95,'Geranylgeranyl pyrophosphate — C20, four isoprene units.']],
+    atoms:g.atoms,bonds:g.bonds
+  });
+})();
+
+/* S9 — 2x FPP -> Squalene */
+(function(){
+  var PPX=40,SPACE=64,Y=210,tw=[.1,.55];
+  var atoms=[
+    A('ppL',[PPX,Y],null,{box:[42,32],lab:'PP',boxColor:['var(--pp-bg)','var(--pp)']}),
+    A('l0',[PPX+64,Y],null,{box:[50,36],lab:'C5',boxColor:['var(--iso1-bg)','var(--iso1)']}),
+    A('l1',[PPX+128,Y],null,{box:[50,36],lab:'C5',boxColor:['var(--iso2-bg)','var(--iso2)']}),
+    A('l2',[PPX+192,Y],null,{box:[50,36],lab:'C5',boxColor:['var(--iso1-bg)','var(--iso1)']}),
+    A('r2',[PPX+192+300,Y],[PPX+256,Y],{box:[50,36],lab:'C5',boxColor:['var(--iso1-bg)','var(--iso1)'],tw:tw}),
+    A('r1',[PPX+256+300,Y],[PPX+320,Y],{box:[50,36],lab:'C5',boxColor:['var(--iso2-bg)','var(--iso2)'],tw:tw}),
+    A('r0',[PPX+320+300,Y],[PPX+384,Y],{box:[50,36],lab:'C5',boxColor:['var(--iso1-bg)','var(--iso1)'],tw:tw}),
+    A('ppR',[PPX+384+300,Y],[PPX+448,Y],{box:[42,32],lab:'PP',boxColor:['var(--pp-bg)','var(--pp)'],tw:tw}),
+    A('ppLgo',[PPX,Y-40],[PPX-70,Y-110],{lab:'PPi',role:'leave',chip:1,cmode:'in',cw:[.6,.82],tw:[.55,.92]}),
+    A('ppRgo',[PPX+448,Y-40],[PPX+520,Y-110],{lab:'PPi',role:'leave',chip:1,cmode:'in',cw:[.6,.82],tw:[.55,.92]})
+  ];
+  var bonds=[B('ppL','l0','1','',{bw:[.55,.85],col:'leave'}),B('l0','l1','1'),B('l1','l2','1'),
+    B('l2','r2','','1',{bw:[.35,.6]}),B('r2','r1','1'),B('r1','r0','1'),
+    B('r0','ppR','1','',{bw:[.6,.9],col:'leave'})];
+  scene({chip:'2× FPP',tag:'Reaction 9 · forms squalene',title:'Two chains join tail-to-tail',fig:'2× FPP tail-to-tail',dur:8500,
+    nameA:'Farnesyl-PP (×2)',nameB:'Squalene · C30',leaves:['2× Pyrophosphate (PPi)'],edges:['fpp>squalene'],active:['squalene'],
+    note:'Squalene synthase joins the two farnesyl chains at the end away from each pyrophosphate; both PP groups are released.',
+    phases:[[0,'One FPP chain (three isoprene units) is in place.'],
+      [.15,'A second FPP chain approaches from the right, tail-first.'],
+      [.5,'A new C-C bond joins the two chains in the middle.'],
+      [.75,'Both pyrophosphate groups are released.'],
+      [.95,'Squalene — C30, six isoprene units, no phosphate groups left.']],
+    atoms:atoms,bonds:bonds
+  });
+})();
+
+/* ---------- shared end-product ring reveal ---------- */
+function endproductScene(o){
+  var fadeUnits=o.units.map(function(u,i){return A('u'+i,u,null,{vis:[1,0],vw:[0,.4]});});
+  var ring=ringA(250,220).map(function(a){a.vis=[0,1];a.vw=[.35,.7];return a;});
+  var atoms=fadeUnits.concat(ring);
+  var bonds=[];
+  for(var i=0;i<o.units.length-1;i++)bonds.push(B('u'+i,'u'+(i+1),'1','',{bw:[0,.35]}));
+  bonds=bonds.concat(ringB(['1','1','1','1','1','1'],[.35,.7]));
+  var texts=[{x:250,y:340,text:o.examples,size:13,bold:1,vis:[0,1],vw:[.72,.95],fill:'var(--fin)'}];
+  scene(Object.assign({atoms:atoms,bonds:bonds,texts:texts,badge:'final',badgeText:'Terpenoid class: '+o.title},o));
+}
+
+/* S10 GPP -> Monoterpenes */
+endproductScene({chip:'→ Monoterpenes',tag:'Final product · from GPP',title:'Cyclization of GPP',fig:'Cyclization / modification',
+  nameA:'Geranyl pyrophosphate',nameB:'Monoterpenes',leaves:['Pyrophosphate (PPi)'],edges:['gpp>mono'],active:['mono'],
+  units:[[130,210],[198,210]],examples:'e.g. limonene · menthol · camphor',
+  note:'Cyclases fold GPP (C10) into ring systems, giving the volatile mono­terpenes typical of essential oils.',
+  phases:[[0,'GPP: two linked isoprene units with a pyrophosphate head.'],[.3,'The pyrophosphate leaves.'],[.6,'The chain folds and cyclizes.'],[.9,'A monoterpene skeleton (C10).']]});
+
+/* S11 FPP -> Sesquiterpenes */
+endproductScene({chip:'→ Sesquiterpenes',tag:'Final product · from FPP',title:'Cyclization of FPP',fig:'Cyclization / modification',
+  nameA:'Farnesyl pyrophosphate',nameB:'Sesquiterpenes',leaves:['Pyrophosphate (PPi)'],edges:['fpp>sesq'],active:['sesq'],
+  units:[[130,210],[198,210],[266,210]],examples:'e.g. farnesol · artemisinin · caryophyllene',
+  note:'FPP (C15) cyclizes directly into the sesquiterpenes — important in plant defence compounds and some antimalarial drugs.',
+  phases:[[0,'FPP: three linked isoprene units with a pyrophosphate head.'],[.3,'The pyrophosphate leaves.'],[.6,'The chain folds and cyclizes.'],[.9,'A sesquiterpene skeleton (C15).']]});
+
+/* S12 GGPP -> Diterpenes */
+endproductScene({chip:'→ Diterpenes',tag:'Final product · from GGPP',title:'Cyclization of GGPP',fig:'Cyclization / modification',
+  nameA:'Geranylgeranyl pyrophosphate',nameB:'Diterpenes',leaves:['Pyrophosphate (PPi)'],edges:['ggpp>di'],active:['di'],
+  units:[[130,210],[198,210],[266,210],[334,210]],examples:'e.g. retinol (vitamin A) · taxol · phytol',
+  note:'GGPP (C20) cyclizes into the diterpenes — this branch does not pass through squalene.',
+  phases:[[0,'GGPP: four linked isoprene units with a pyrophosphate head.'],[.3,'The pyrophosphate leaves.'],[.6,'The chain folds and cyclizes.'],[.9,'A diterpene skeleton (C20).']]});
+
+/* S13 Squalene -> Triterpenes & steroids */
+endproductScene({chip:'→ Triterpenes & steroids',tag:'Final product · from squalene',title:'Oxidation and cyclization of squalene',fig:'Oxidation and cyclization',dur:8500,
+  nameA:'Squalene',nameB:'Triterpenes & steroids',edges:['squalene>tri'],active:['tri'],
+  units:[[70,210],[124,210],[178,210],[232,210],[286,210],[340,210]],examples:'e.g. cholesterol · testosterone · cortisol',
+  note:'Squalene (C30) is epoxidized and cyclized (via lanosterol in animals) into the four-ring steroid nucleus — the basis of cholesterol and the steroid hormones.',
+  phases:[[0,'Squalene: six linked isoprene units, no phosphate groups.'],[.3,'Squalene epoxidase oxidizes one end.'],[.6,'The chain folds into fused rings.'],[.9,'The steroid nucleus (schematic single ring shown).']]});
+
+/* ================= RENDERER ================= */
+function estW(s){var w=0;for(var i=0;i<s.length;i++){var ch=s[i];if(/[0-9]/.test(ch))w+=8.6;else if(/[A-Z]/.test(ch))w+=13.6;else if(/[a-z]/.test(ch))w+=10.6;else if(ch===' ')w+=5;else w+=9;}return w;}
+function astate(a,t){
+  var tw=a.tw||[0,1],e=ease(loc(t,tw)),x,y;
+  if(a.via){var u=1-e;x=u*u*a.p0[0]+2*u*e*a.via[0]+e*e*a.p1[0];y=u*u*a.p0[1]+2*u*e*a.via[1]+e*e*a.p1[1];}
+  else{x=lerp(a.p0[0],a.p1[0],e);y=lerp(a.p0[1],a.p1[1],e);}
+  var v=1;
+  if(a.fade){v=smooth(loc(t,[a.fade[0],a.fade[1]]))*(1-smooth(loc(t,[a.fade[2],a.fade[3]])));}
+  else if(a.vis){v=lerp(a.vis[0],a.vis[1],smooth(loc(t,a.vw||tw)));}
+  var lw=a.lw||[lerp(tw[0],tw[1],.35),lerp(tw[0],tw[1],.65)],S=smooth(loc(t,lw));
+  var A_='',B_='',oa=1,ob=0;
+  if(Array.isArray(a.lab)){A_=a.lab[0];B_=a.lab[1];oa=1-S;ob=S;}else{A_=a.lab||'';}
+  var anA=Array.isArray(a.la)?a.la[0]:(a.la||'m'),anB=Array.isArray(a.la)?a.la[1]:(a.la||'m');
+  var cur=ob>oa?B_:A_,an=ob>oa?anB:anA,ext=null;
+  if(!a.box&&!a.virt&&cur){ext={hw:an==='m'?estW(cur)/2+3:9,hh:11};}
+  return {x:x,y:y,v:v,A_:A_,B_:B_,oa:oa,ob:ob,anA:anA,anB:anB,ext:ext};
+}
+function trim(e,ux,uy){if(!e)return 0;return 1/Math.sqrt((ux/e.hw)*(ux/e.hw)+(uy/e.hh)*(uy/e.hh));}
+function f1(n){return n.toFixed(1);}
+function drawDef(type,pa,pb,cpos,col,op){
+  var dx=pb.x-pa.x,dy=pb.y-pa.y,L=Math.hypot(dx,dy);if(L<1)return '';
+  var ux=dx/L,uy=dy/L,nx=-uy,ny=ux,ta=trim(pa.ext,ux,uy)+1.5,tb=trim(pb.ext,-ux,-uy)+1.5;
+  if(L-ta-tb<5)return '';
+  var x1=pa.x+ux*ta,y1=pa.y+uy*ta,x2=pb.x-ux*tb,y2=pb.y-uy*tb,l=L-ta-tb;
+  var g=function(inner){return '<g opacity="'+op.toFixed(3)+'" style="stroke:'+col+';fill:'+col+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+inner+'</g>';};
+  var ln=function(a,b,c,d){return '<line x1="'+f1(a)+'" y1="'+f1(b)+'" x2="'+f1(c)+'" y2="'+f1(d)+'"/>';};
+  if(type==='1')return g(ln(x1,y1,x2,y2));
+  if(type==='2'){
+    if(cpos){var mx=(x1+x2)/2,my=(y1+y2)/2,side=((cpos.x-mx)*nx+(cpos.y-my)*ny)>=0?1:-1,o=6,sh=Math.min(10,l*.2);
+      return g(ln(x1,y1,x2,y2)+ln(x1+ux*sh+nx*side*o,y1+uy*sh+ny*side*o,x2-ux*sh+nx*side*o,y2-uy*sh+ny*side*o));}
+    var o2=3.3;return g(ln(x1+nx*o2,y1+ny*o2,x2+nx*o2,y2+ny*o2)+ln(x1-nx*o2,y1-ny*o2,x2-nx*o2,y2-ny*o2));
+  }
+  return '';
+}
+function bondColor(b){
+  if(!HL)return 'var(--ink)';
+  if(b.col==='leave')return 'var(--brk)';
+  if(b.s0===b.s1)return 'var(--ink)';
+  if(!b.s0)return 'var(--form)';
+  if(!b.s1)return 'var(--brk)';
+  return 'var(--chg)';
+}
+function bondSvg(b,st,t){
+  var sa=st[b.a],sb=st[b.b];if(!sa||!sb)return '';
+  var vis=Math.min(sa.v,sb.v);if(vis<.02)return '';
+  var S=smooth(loc(t,b.bw||[.3,.7])),col=bondColor(b),cpos=b.c?st[b.c]:null,out='';
+  if(b.s0===b.s1){if(b.s0)out+=drawDef(b.s0,sa,sb,cpos,col,vis);}
+  else{if(b.s0&&1-S>.02)out+=drawDef(b.s0,sa,sb,cpos,col,(1-S)*vis);if(b.s1&&S>.02)out+=drawDef(b.s1,sa,sb,cpos,col,S*vis);}
+  return out;
+}
+function txtSvg(str,x,y,an,op,fill,size,weight){
+  size=size||F;
+  var ta=an==='s'?'start':an==='e'?'end':'middle',dx=an==='s'?-7:an==='e'?7:0,inner='',sub=false;
+  str.split(/(\d+)/).forEach(function(seg){
+    if(!seg)return;
+    if(/^\d+$/.test(seg)){inner+='<tspan dy="'+(size*.2)+'" font-size="'+(size*.7)+'">'+seg+'</tspan>';sub=true;}
+    else{inner+=sub?'<tspan dy="'+(-size*.2)+'">'+seg+'</tspan>':seg;sub=false;}
+  });
+  return '<text x="'+f1(x+dx)+'" y="'+f1(y+size*.33)+'" text-anchor="'+ta+'" font-size="'+size+'" font-weight="'+(weight||500)+'" style="fill:'+fill+'" opacity="'+op.toFixed(3)+'">'+inner+'</text>';
+}
+function chipSvg(a,s,t){
+  if(!HL||!a.chip)return '';
+  var mode=a.cmode||'always',o=1;
+  if(mode==='B')o=s.ob;else if(mode==='in')o=smooth(loc(t,a.cw));else if(mode==='out')o=1-smooth(loc(t,a.cw));
+  o*=s.v;if(o<.02)return '';
+  var str=s.B_||s.A_;if(!str)return '';
+  var an=s.B_?s.anB:s.anA,w=estW(str),cx=s.x;
+  if(an==='s')cx=s.x-7+w/2;else if(an==='e')cx=s.x+7-w/2;
+  var c=a.role==='enter'?'var(--enter)':'var(--leave)';
+  return '<rect x="'+f1(cx-w/2-9)+'" y="'+f1(s.y-15)+'" width="'+f1(w+18)+'" height="30" rx="9" style="fill:'+c+';stroke:'+c+'" fill-opacity="'+(.14*o).toFixed(3)+'" stroke-opacity="'+(.85*o).toFixed(3)+'" stroke-width="1.5"/>';
+}
+function atomSvg(a,s,t){
+  if(a.virt)return '';
+  var out='';
+  if(a.box){
+    var w=a.box[0],h=a.box[1],lines=(s.A_||'').split('\n'),y0=s.y-(lines.length-1)*9.5;
+    var fill=a.boxColor?a.boxColor[0]:'var(--pre-bg)',stroke=a.boxColor?a.boxColor[1]:'var(--pre)';
+    out+='<g opacity="'+s.v.toFixed(3)+'"><rect x="'+f1(s.x-w/2)+'" y="'+f1(s.y-h/2)+'" width="'+w+'" height="'+h+'" rx="11" stroke-width="2" style="fill:'+fill+';stroke:'+stroke+'"/>';
+    lines.forEach(function(ln,i){out+=txtSvg(ln,s.x,y0+i*17,'m',1,'var(--ink)',13.5,700);});
+    return out+'</g>';
+  }
+  var col=(HL&&a.role)?(a.role==='leave'?'var(--leave)':'var(--enter)'):'var(--ink)';
+  out+=chipSvg(a,s,t);
+  if(s.A_&&s.oa*s.v>.02)out+=txtSvg(s.A_,s.x,s.y,s.anA,s.oa*s.v,col);
+  if(s.B_&&s.ob*s.v>.02)out+=txtSvg(s.B_,s.x,s.y,s.anB,s.ob*s.v,col);
+  return out;
+}
+function stageSvg(sc,t){
+  var st={},s='';
+  sc.atoms.forEach(function(a){st[a.id]=astate(a,t);});
+  (sc.texts||[]).forEach(function(x){var v=x.vis?lerp(x.vis[0],x.vis[1],smooth(loc(t,x.vw))):1;if(v>.02)s+=txtSvg(x.text,x.x,x.y,'m',v,x.fill||'var(--ink)',x.size||14,x.bold?700:500);});
+  (sc.arrows||[]).forEach(function(ar){
+    var e=ease(loc(t,ar.tw));if(e<.02)return;
+    var ex=lerp(ar.a[0],ar.b[0],e),ey=lerp(ar.a[1],ar.b[1],e),dx=ar.b[0]-ar.a[0],dy=ar.b[1]-ar.a[1],L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
+    s+='<g style="stroke:var(--arrow);fill:var(--arrow)"><line x1="'+ar.a[0]+'" y1="'+ar.a[1]+'" x2="'+f1(ex)+'" y2="'+f1(ey)+'" stroke-width="3" stroke-linecap="round"/>'+
+      '<polygon points="'+f1(ex)+','+f1(ey)+' '+f1(ex-ux*11-uy*6)+','+f1(ey-uy*11+ux*6)+' '+f1(ex-ux*11+uy*6)+','+f1(ey-uy*11-ux*6)+'"/></g>';
+  });
+  sc.bonds.forEach(function(b){s+=bondSvg(b,st,t);});
+  sc.atoms.forEach(function(a){s+=atomSvg(a,st[a.id],t);});
+  if(sc.statinGate&&STATIN_ON){
+    s+='<g opacity="0.95"><rect x="130" y="188" width="300" height="46" rx="10" style="fill:var(--fin-bg);stroke:var(--fin)" stroke-width="2"/>'+
+      '<text x="280" y="217" text-anchor="middle" font-size="15" font-weight="700" style="fill:var(--fin)">Blocked by statin</text></g>';
+  }
+  return s;
+}
+
+/* ---------- pathway map ---------- */
+var NODES=[
+ {id:'photo',x:2,y:2,w:78,h:34,l:'Photo-\nsynthesis',k:'pre',r:0},
+ {id:'carb',x:86,y:2,w:78,h:34,l:'Glucose',k:'pre',r:0},
+ {id:'glyc',x:170,y:2,w:78,h:34,l:'Glycolysis',k:'pre',r:0},
+ {id:'pyr',x:254,y:2,w:78,h:34,l:'Pyruvic\nacid',k:'pre',r:0},
+ {id:'acoa',x:338,y:2,w:74,h:34,l:'Acetyl-CoA',k:'pre',r:0},
+ {id:'acacoa',x:2,y:52,w:104,h:36,l:'Aceto­acetyl-\nCoA',k:'int',r:1},
+ {id:'hmgcoa',x:112,y:52,w:96,h:36,l:'HMG-CoA',k:'int',r:2},
+ {id:'mev',x:214,y:52,w:96,h:36,l:'Mevalonic\nacid',k:'gold',r:3},
+ {id:'ipp',x:316,y:52,w:96,h:36,l:'IPP',k:'int',r:4},
+ {id:'dmapp',x:2,y:102,w:96,h:36,l:'DMAPP',k:'int',r:5},
+ {id:'gpp',x:104,y:102,w:70,h:36,l:'GPP · C10',k:'int',r:6},
+ {id:'fpp',x:180,y:102,w:70,h:36,l:'FPP · C15',k:'int',r:7},
+ {id:'ggpp',x:256,y:102,w:78,h:36,l:'GGPP · C20',k:'int',r:8},
+ {id:'squalene',x:340,y:102,w:72,h:36,l:'Squalene\nC30',k:'int',r:9},
+ {id:'mono',x:104,y:150,w:70,h:40,l:'Mono-\nterpenes',k:'fin',r:10},
+ {id:'sesq',x:180,y:150,w:70,h:40,l:'Sesqui-\nterpenes',k:'fin',r:11},
+ {id:'di',x:256,y:150,w:78,h:40,l:'Diterpenes',k:'fin',r:12},
+ {id:'tri',x:340,y:150,w:72,h:44,l:'Triterpenes\n& steroids',k:'fin',r:13}
+];
+var EDGES=['photo>carb','carb>glyc','glyc>pyr','pyr>acoa','acoa>acacoa','acacoa>hmgcoa','hmgcoa>mev','mev>ipp','ipp>dmapp',
+ 'dmapp>gpp','gpp>fpp','fpp>ggpp','fpp>squalene','gpp>mono','fpp>sesq','ggpp>di','squalene>tri'];
+var NB={};NODES.forEach(function(n){NB[n.id]=n;});
+var KC={pre:['var(--pre-bg)','var(--pre)'],int:['var(--card)','var(--int)'],gold:['var(--gold-bg)','var(--gold)'],fin:['var(--fin-bg)','var(--fin)']};
+function edgePts(a,b){
+  var ca=[a.x+a.w/2,a.y+a.h/2],cb=[b.x+b.w/2,b.y+b.h/2],dx=cb[0]-ca[0],dy=cb[1]-ca[1];
+  var clip=function(n){var hw=n.w/2+4,hh=n.h/2+4;return Math.min(dx?hw/Math.abs(dx):1e9,dy?hh/Math.abs(dy):1e9);};
+  var ta=clip(a),tb=clip(b);
+  return [ca[0]+dx*ta,ca[1]+dy*ta,cb[0]-dx*tb,cb[1]-dy*tb];
+}
+function mapSvg(sc,i){
+  var s='<defs><marker id="mk" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" style="fill:var(--line)"/></marker><marker id="mko" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" style="fill:var(--arrow)"/></marker></defs>';
+  EDGES.forEach(function(e){
+    var p=e.split('>'),q=edgePts(NB[p[0]],NB[p[1]]),on=sc.edges.indexOf(e)>=0;
+    s+='<line class="edge'+(on?' on':'')+'" x1="'+f1(q[0])+'" y1="'+f1(q[1])+'" x2="'+f1(q[2])+'" y2="'+f1(q[3])+'" marker-end="url(#'+(on?'mko':'mk')+')"/>';
+  });
+  NODES.forEach(function(n){
+    var reached=n.r<=i,act=sc.active.indexOf(n.id)>=0,c=KC[n.k],lines=n.l.split('\n'),y0=n.y+n.h/2-(lines.length-1)*6.2;
+    s+='<g class="node" data-r="'+n.r+'" opacity="'+(reached?1:.5)+'" tabindex="0" role="button" aria-label="'+n.l.replace('\n',' ')+'">'+
+      '<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="8" stroke-width="'+(act?3.5:1.6)+'" style="fill:'+c[0]+';stroke:'+(act?'var(--arrow)':c[1])+'"/>';
+    lines.forEach(function(ln,k){s+='<text x="'+(n.x+n.w/2)+'" y="'+f1(y0+k*11.5+3.4)+'" text-anchor="middle" font-size="9.6" font-weight="'+(k===0?650:500)+'" style="fill:var(--ink)">'+ln+'</text>';});
+    s+='</g>';
+  });
+  return s;
+}
+
+/* ---------- UI ---------- */
+var $=function(id){return document.getElementById(id);};
+var idx=0,T=0,playing=false,speed=1,autoNext=true,endAt=0,lastTs=0,dragging=false;
+var STATIN_ON=false;
+var reduce=false;try{reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+
+function buildSteps(){
+  $('steps').innerHTML=SC.map(function(sc,i){return '<button class="step" data-i="'+i+'"><span class="n">'+i+'</span>'+sc.chip+'</button>';}).join('');
+}
+function updateSteps(){
+  var els=$('steps').children;
+  for(var i=0;i<els.length;i++){els[i].className='step'+(i===idx?' on':(i<idx?' done':''));}
+  var cur=els[idx];if(cur&&cur.scrollIntoView){try{var box=$('steps');box.scrollTo({left:cur.offsetLeft-box.clientWidth/2+cur.clientWidth/2,behavior:'smooth'});}catch(e){}}
+}
+function eqHtml(sc){
+  var s='<span class="cmp">'+sc.nameA+'</span>';
+  sc.enters.forEach(function(x){s+=' <span class="plus">+</span> <span class="chip in">'+x+'</span>';});
+  s+=' <span class="ar">→</span> <span class="cmp">'+sc.nameB+'</span>';
+  sc.leaves.forEach(function(x){s+=' <span class="plus">+</span> <span class="chip out">'+x+'</span>';});
+  return s;
+}
+function buildInfo(){
+  var sc=SC[idx];
+  $('iTitle').textContent=sc.title;$('iTag').textContent=sc.tag;$('iFig').textContent='Figure label: '+sc.fig;
+  $('iEq').innerHTML=eqHtml(sc);$('iNote').textContent=sc.note;
+  $('iPhases').innerHTML=sc.phases.map(function(p,i){return '<li data-t="'+p[0]+'">'+p[1]+'</li>';}).join('');
+  $('nA').textContent=sc.nameA;$('nB').textContent=sc.nameB;
+  var bd=$('badge');if(sc.badge){bd.hidden=false;bd.className='badge '+sc.badge;bd.textContent=sc.badgeText;}else{bd.hidden=true;}
+  var sb=$('statinBox');sb.classList.toggle('show',!!sc.statinGate);
+  $('map').innerHTML=mapSvg(sc,idx);
+  var blocked=sc.statinGate&&STATIN_ON;
+  $('prev').disabled=idx===0;
+  $('next').disabled=idx===SC.length-1||blocked;
+  $('play').disabled=blocked;
+  $('scrub').disabled=blocked;
+  updateSteps();
+}
+function render(){
+  var sc=SC[idx];
+  $('stage').innerHTML=stageSvg(sc,T);
+  var S=smooth(loc(T,[.3,.9]));
+  $('nA').style.opacity=lerp(1,.45,S);$('nB').style.opacity=lerp(.45,1,S);
+  var pi=0;sc.phases.forEach(function(p,i){if(T>=p[0]-1e-6)pi=i;});
+  var lis=$('iPhases').children;for(var i=0;i<lis.length;i++){lis[i].className=i===pi?'on':'';}
+  if(!dragging)$('scrub').value=Math.round(T*1000);
+  $('play').textContent=playing?'⏸':'▶';
+}
+function go(i,t0,play){
+  idx=clamp(i,0,SC.length-1);T=t0||0;endAt=0;buildInfo();
+  if(play!==undefined)playing=play&&!(SC[idx].statinGate&&STATIN_ON);
+  render();
+}
+function loop(ts){
+  if(!lastTs)lastTs=ts;var dt=Math.min(80,ts-lastTs);lastTs=ts;
+  var blocked=SC[idx].statinGate&&STATIN_ON;
+  if(playing&&!dragging&&!blocked){
+    if(T<1){T=Math.min(1,T+dt*speed/SC[idx].dur);endAt=0;}
+    else{
+      if(autoNext&&idx<SC.length-1){if(!endAt)endAt=ts;if(ts-endAt>1200){go(idx+1,0);endAt=0;}}
+      else{playing=false;}
+    }
+    render();
+  }else if(blocked&&playing){playing=false;render();}
+  requestAnimationFrame(loop);
+}
+
+/* events */
+$('steps').addEventListener('click',function(e){var b=e.target.closest('.step');if(b)go(+b.getAttribute('data-i'),0,true);});
+$('play').addEventListener('click',function(){if(SC[idx].statinGate&&STATIN_ON)return;if(!playing&&T>=1){T=0;}playing=!playing;endAt=0;render();});
+$('replay').addEventListener('click',function(){if(SC[idx].statinGate&&STATIN_ON)return;T=0;playing=true;endAt=0;render();});
+$('prev').addEventListener('click',function(){go(idx-1,0,true);});
+$('next').addEventListener('click',function(){go(idx+1,0,true);});
+$('scrub').addEventListener('input',function(e){if(SC[idx].statinGate&&STATIN_ON)return;dragging=true;playing=false;T=+e.target.value/1000;render();});
+$('scrub').addEventListener('change',function(){dragging=false;});
+$('speed').addEventListener('change',function(e){speed=+e.target.value;});
+$('auto').addEventListener('change',function(e){autoNext=e.target.checked;});
+$('hl').addEventListener('change',function(e){HL=e.target.checked;render();});
+$('statinToggle').addEventListener('change',function(e){
+  STATIN_ON=e.target.checked;
+  if(STATIN_ON&&SC[idx].statinGate){playing=false;T=0;}
+  buildInfo();render();
+});
+$('iPhases').addEventListener('click',function(e){var li=e.target.closest('li');if(li){T=Math.min(.999,parseFloat(li.getAttribute('data-t'))+.003);playing=false;render();}});
+$('map').addEventListener('click',function(e){var n=e.target.closest('.node');if(n)go(+n.getAttribute('data-r'),0,true);});
+$('map').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){var n=e.target.closest&&e.target.closest('.node');if(n){e.preventDefault();go(+n.getAttribute('data-r'),0,true);}}});
+document.addEventListener('keydown',function(e){
+  var tg=e.target&&e.target.tagName;if(tg==='INPUT'||tg==='SELECT'||tg==='BUTTON')return;
+  if(e.key===' '){e.preventDefault();$('play').click();}
+  else if(e.key==='ArrowRight')go(idx+1,0,true);else if(e.key==='ArrowLeft')go(idx-1,0,true);
+});
+
+buildSteps();
+go(0,0,!reduce);
+window.__dbg={SC:SC,stageSvg:stageSvg,mapSvg:mapSvg};
+requestAnimationFrame(loop);
+})();
+
+</script>
+</body>
+</html>
